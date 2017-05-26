@@ -1,0 +1,2 @@
+option('enable_console', type: 'boolean', value: true)
+option('enable_engine', type: 'boolean', value: true)
