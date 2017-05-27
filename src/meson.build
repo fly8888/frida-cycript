@@ -100,13 +100,39 @@ analyze_sources = [
   'Replace.cpp',
   'Syntax.cpp',
 ]
-executable('Analyze', analyze_sources,
+analyze = executable('Analyze', analyze_sources,
   include_directories: include_directories('extra'),
   dependencies: clang_dep,
   link_args: clank_link_flags,
 )
 
+cycript_bridge_definitions = custom_target('cycript-bridge-definitions',
+  input: [
+    analyze,
+    'Analysis.cpp',
+    'Bridge.old',
+  ],
+  output: 'Bridge.def',
+  command: [
+    find_program('generate-bridge-definitions.py'),
+    '@INPUT@',
+    '@OUTPUT@',
+  ],
+)
+
+cycript_database = custom_target('cycript-database',
+  input: cycript_bridge_definitions,
+  output: 'libcycript.db',
+  command: [
+    find_program('libcycript.py'),
+    '@INPUT@',
+    '@OUTPUT@',
+  ],
+)
+install_data(cycript_database, install_dir: get_option('datadir'))
+
 library('cycript', cycript_sources,
   cpp_args: ['-DYYDEBUG=1'],
   link_args: cycript_link_args + dep_libs,
+  install: true,
 )
