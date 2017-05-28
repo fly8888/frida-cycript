@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import os
 import platform
 import subprocess
 import sys
@@ -19,4 +20,6 @@ else:
     url_template = "https://github.com/frida/frida/releases/download/%(version)s/frida-core-devkit-%(version)s-%(os)s-%(arch)s.tar.xz"
     url = url_template % params
     exit_code = subprocess.call("curl -Ls {0} | xz -d | tar -C {1} -xf -".format(url, output_dir), shell=True)
+if exit_code == 0:
+    os.utime(os.path.join(output_dir, "frida-core.h"), None)
 sys.exit(exit_code)

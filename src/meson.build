@@ -30,12 +30,12 @@ cycript_scanner_grammar = custom_target('cycript-scanner-grammar',
 )
 cycript_scanner = custom_target('cycript-scanner',
   input: cycript_scanner_grammar,
-  output: ['Scanner.hpp', 'Scanner.cpp'],
+  output: ['Scanner.cpp'],
   command: [
     flex,
     '--full',
     '--ecs',
-    '-o', '@OUTPUT1@',
+    '-o', '@OUTPUT@',
     '@INPUT@',
   ],
 )
