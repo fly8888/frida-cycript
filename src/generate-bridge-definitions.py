@@ -11,6 +11,7 @@ analyze = sys.argv[3]
 analysis_cpp = sys.argv[4]
 bridge_old = sys.argv[5]
 output_file = sys.argv[6]
+extra_flags = sys.argv[7:]
 
 host_clang_arch = 'i386' if host_arch == 'x86' else host_arch
 
@@ -23,11 +24,11 @@ if host_os == 'macos':
     sdk_path = subprocess.check_output(["xcrun", "--sdk", sdk, "--show-sdk-path"]).strip()
 
     host_flags = [
+        "-ObjC++",
         "-isysroot", sdk_path,
         "-mmacosx-version-min=" + minver,
         "-arch", host_clang_arch,
         "-stdlib=libc++",
-        "-ObjC++",
     ]
 elif host_os == 'ios':
     sdk = 'iphoneos'
@@ -36,17 +37,19 @@ elif host_os == 'ios':
     sdk_path = subprocess.check_output(["xcrun", "--sdk", sdk, "--show-sdk-path"]).strip()
 
     host_flags = [
+        "-ObjC++",
         "-isysroot", sdk_path,
         "-miphoneos-version-min=" + minver,
         "-arch", host_clang_arch,
         "-stdlib=libc++"
-        "-ObjC++",
     ]
 
-definitions = subprocess.check_output([
+analyze_args = [
     analyze,
     analysis_cpp,
-] + host_flags).decode('utf-8')
+] + host_flags + extra_flags
+print("analyze_args:", " ".join(analyze_args))
+definitions = subprocess.check_output(analyze_args).decode('utf-8')
 
 with codecs.open(bridge_old, 'r', 'utf-8') as f:
     old_definitions = f.read()

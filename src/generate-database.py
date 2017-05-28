@@ -1,38 +1,41 @@
 #!/usr/bin/python
 
+import codecs
 import os
 import sqlite3
 import sys
 
 system = sys.argv[1]
 dbfile = sys.argv[2]
-nodejs = sys.argv[3]
-merges = sys.argv[4:]
+brdefs = sys.argv[3]
+nodejs = sys.argv[4]
+merges = sys.argv[5:]
 
 system = int(system)
-nodejs += '/node/lib'
+nodejs = os.path.join(nodejs, 'lib')
 
 keys = {}
 
-while True:
-    line = sys.stdin.readline()
-    if line == "":
-        break
-    elif line == "\n":
-        continue
-    assert line[-1] == '\n'
-    line = line[0:-1]
+with codecs.open(brdefs, 'r', 'utf-8') as brdefs_file:
+    while True:
+        line = brdefs_file.readline()
+        if line == "":
+            break
+        elif line == "\n":
+            continue
+        assert line[-1] == '\n'
+        line = line[0:-1]
 
-    pipe = line.index('|')
-    name = line[0:pipe]
-    line = line[pipe+1:]
+        pipe = line.index('|')
+        name = line[0:pipe]
+        line = line[pipe+1:]
 
-    quote = line.index('"')
-    flags = int(line[0:quote])
-    code = line[quote+1:-1]
+        quote = line.index('"')
+        flags = int(line[0:quote])
+        code = line[quote+1:-1]
 
-    key = (name, flags, code)
-    keys[key] = system
+        key = (name, flags, code)
+        keys[key] = system
 
 for db in merges:
     with sqlite3.connect(db) as sql:
@@ -51,7 +54,7 @@ with sqlite3.connect(dbfile) as sql:
     c.execute("create table module (name text not null, flags int not null, code blob not null, primary key (name))")
 
     for name in [js[0:-3] for js in os.listdir(nodejs) if js.endswith('.js')]:
-        with open(nodejs + '/' + name + '.js', 'r') as file:
+        with open(os.path.join(nodejs, name + '.js'), 'r') as file:
             code = file.read()
         c.execute("insert into module (name, flags, code) values (?, ?, ?)", [name, 0, buffer(code)])
 

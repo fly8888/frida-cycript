@@ -41,21 +41,50 @@ endif
 
 flex = find_program('flex')
 bison = find_program(files('ext/toolchain/usr/bin/bison.py'))
+nodejs = files('ext/node')
 
 cdata = configuration_data()
 
-cdata.set_quoted('CY_SYSTEM', '1')
+host_os_id = '1'
+cdata.set_quoted('CY_SYSTEM', host_os_id)
 
 if get_option('enable_engine')
   cdata.set('CY_EXECUTE', 1)
 endif
 
+dep_includes = []
 dep_libs = []
 
 if not cc.has_header('sqlite3.h')
   error('sqlite3 is required')
 endif
 dep_libs += ['-lsqlite3']
+
+enable_java = true
+cdata.set10('CY_JAVA', enable_java)
+
+enable_ruby = true
+cdata.set10('CY_RUBY', enable_ruby)
+
+python = get_option('with-python')
+if python != 'no'
+  enable_python = true
+
+  result = run_command(python, '-c',
+    'from distutils import sysconfig; import sys; sys.stdout.write(sysconfig.get_python_inc())')
+  if result.returncode() != 0
+    error('Unable to detect Python include directory: ' + result.stdout() + result.stderr())
+  endif
+  python_incdir = result.stdout()
+
+  dep_includes += '-I' + python_incdir
+else
+  enable_python = false
+endif
+cdata.set10('CY_PYTHON', enable_python)
+
+enable_objc = true
+cdata.set10('CY_OBJECTIVEC', enable_objc)
 
 if build_machine.system() == 'darwin'
   result = run_command(find_program('scripts/detect-xcode-clang-libdir'))
