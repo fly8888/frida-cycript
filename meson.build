@@ -41,6 +41,7 @@ endif
 
 flex = find_program('flex')
 bison = find_program(files('ext/toolchain/usr/bin/bison.py'))
+npm = find_program('npm')
 
 cdata = configuration_data()
 
@@ -86,7 +87,7 @@ enable_objc = true
 cdata.set10('CY_OBJECTIVEC', enable_objc)
 
 if build_machine.system() == 'darwin'
-  result = run_command(find_program('scripts/detect-xcode-clang-libdir'))
+  result = run_command('scripts/detect-xcode-clang-libdir')
   clang_libdir = result.stdout().strip()
   clang_dep = cc.find_library('clang', dirs: clang_libdir)
   clank_link_flags = ['-rpath', clang_libdir]

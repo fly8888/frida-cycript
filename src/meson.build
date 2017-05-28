@@ -17,16 +17,16 @@ cycript_sources = [
 cycript_features = ['C', 'Java', 'Ruby', 'Python', 'ObjectiveC']
 cycript_link_args = []
 
-filter = find_program('filter.py')
+filter = files('filter.py')
 
 cycript_scanner_grammar = custom_target('cycript-scanner-grammar',
   input: 'Scanner.lpp.in',
   output: 'Scanner.lpp',
   command: [
     filter,
-    '@INPUT@'
+    '@INPUT@',
+    '@OUTPUT@',
   ] + cycript_features,
-  capture: true,
 )
 cycript_scanner = custom_target('cycript-scanner',
   input: cycript_scanner_grammar,
@@ -46,15 +46,15 @@ cycript_parser_grammar = custom_target('cycript-parser-grammar',
   output: 'Parser.ypp',
   command: [
     filter,
-    '@INPUT@'
+    '@INPUT@',
+    '@OUTPUT@',
   ] + cycript_features,
-  capture: true,
 )
 cycript_parser = custom_target('cycript-parser',
   input: cycript_parser_grammar,
   output: ['Parser.hpp', 'Parser.cpp'],
   command: [
-    find_program('generate-parser.py'),
+    files('generate-parser.py'),
     bison,
     '@INPUT@',
     '@OUTPUT@',
@@ -70,7 +70,7 @@ if get_option('enable_engine')
   frida_core = custom_target('frida-core',
     output: ['frida-core.h'],
     command: [
-      find_program('fetch-frida-devkit.py'),
+      files('fetch-frida-devkit.py'),
       '10.0.8',
       host_os,
       host_arch,
@@ -115,7 +115,7 @@ if get_option('enable_engine')
     ],
     output: 'Bridge.def',
     command: [
-      find_program('generate-bridge-definitions.py'),
+      files('generate-bridge-definitions.py'),
       host_os,
       host_arch,
       '@INPUT@',
@@ -130,7 +130,7 @@ if get_option('enable_engine')
     input: cycript_bridge_definitions,
     output: 'libcycript.db',
     command: [
-      find_program('generate-database.py'),
+      files('generate-database.py'),
       host_os_id,
       '@OUTPUT@',
       '@INPUT@',
@@ -144,8 +144,8 @@ if get_option('enable_engine')
     input: 'package.json',
     output: 'node_modules',
     command: [
-      find_program('fetch-node-modules.py'),
-      find_program('npm'),
+      files('fetch-node-modules.py'),
+      npm,
       '@INPUT@',
       '@OUTDIR@',
     ],
@@ -158,7 +158,7 @@ if get_option('enable_engine')
     ],
     output: 'libcycript.js',
     command: [
-      find_program('generate-runtime.py'),
+      files('generate-runtime.py'),
       '@INPUT@',
       '@OUTPUT@',
     ],

@@ -9,7 +9,7 @@ include_pattern = re.compile(r'^@include (.+)$')
 begin_pattern = re.compile(r'^@begin (.+)$')
 end_pattern = re.compile(r'^@end$')
 
-def include(source, filters):
+def include(source, output_file, filters):
     condition = []
     for line in codecs.open(source, 'rb', 'utf-8'):
         line = line.rstrip()
@@ -20,7 +20,7 @@ def include(source, filters):
                 match = include_pattern.match(line)
                 if match is not None:
                     other_source = os.path.join(os.path.dirname(source), match.group(1))
-                    include(other_source, filters)
+                    include(other_source, output_file, filters)
                     handled = True
 
             if not handled:
@@ -37,9 +37,12 @@ def include(source, filters):
                     handled = True
 
         if not handled and (len(condition) == 0 or condition[-1]()):
-            sys.stdout.write(line)
-            sys.stdout.write('\n')
+            output_file.write(line)
+            output_file.write('\n')
 
-source = sys.argv[1]
-filters = set(sys.argv[2:])
-include(source, filters)
+input_path = sys.argv[1]
+output_path = sys.argv[2]
+filters = set(sys.argv[3:])
+
+with codecs.open(output_path, 'wb', 'utf-8') as output_file:
+    include(input_path, output_file, filters)
