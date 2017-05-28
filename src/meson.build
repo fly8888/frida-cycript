@@ -93,53 +93,79 @@ if get_option('enable_engine')
       '-Wl,-no_compact_unwind',
     ]
   endif
+
+  analyze_sources = [
+    'Analyze.cpp',
+    'Error.cpp',
+    'Output.cpp',
+    'Replace.cpp',
+    'Syntax.cpp',
+  ]
+  analyze = executable('Analyze', analyze_sources,
+    include_directories: include_directories('extra'),
+    dependencies: clang_dep,
+    link_args: clank_link_flags,
+  )
+
+  cycript_bridge_definitions = custom_target('cycript-bridge-definitions',
+    input: [
+      analyze,
+      'Analysis.cpp',
+      'Bridge.old',
+    ],
+    output: 'Bridge.def',
+    command: [
+      find_program('generate-bridge-definitions.py'),
+      host_os,
+      host_arch,
+      '@INPUT@',
+      '@OUTPUT@',
+      '-DCY_JAVA=' + enable_java.to_string('1', '0'),
+      '-DCY_PYTHON=' + enable_python.to_string('1', '0'),
+      '-DCY_OBJECTIVEC=' + enable_objc.to_string('1', '0'),
+    ] + dep_includes,
+  )
+
+  cycript_database = custom_target('cycript-database',
+    input: cycript_bridge_definitions,
+    output: 'libcycript.db',
+    command: [
+      find_program('generate-database.py'),
+      host_os_id,
+      '@OUTPUT@',
+      '@INPUT@',
+      join_paths(meson.source_root(), 'ext', 'node'),
+    ],
+    install: true,
+    install_dir: get_option('datadir'),
+  )
+
+  node_modules = custom_target('node-modules',
+    input: 'package.json',
+    output: 'node_modules',
+    command: [
+      find_program('fetch-node-modules.py'),
+      find_program('npm'),
+      '@INPUT@',
+      '@OUTDIR@',
+    ],
+  )
+
+  custom_target('cycript-runtime',
+    input: [
+      'Agent/index.js',
+      node_modules,
+    ],
+    output: 'libcycript.js',
+    command: [
+      find_program('generate-runtime.py'),
+      '@INPUT@',
+      '@OUTPUT@',
+    ],
+    install: true,
+    install_dir: get_option('datadir'),
+  )
 endif
-
-analyze_sources = [
-  'Analyze.cpp',
-  'Error.cpp',
-  'Output.cpp',
-  'Replace.cpp',
-  'Syntax.cpp',
-]
-analyze = executable('Analyze', analyze_sources,
-  include_directories: include_directories('extra'),
-  dependencies: clang_dep,
-  link_args: clank_link_flags,
-)
-
-cycript_bridge_definitions = custom_target('cycript-bridge-definitions',
-  input: [
-    analyze,
-    'Analysis.cpp',
-    'Bridge.old',
-  ],
-  output: 'Bridge.def',
-  command: [
-    find_program('generate-bridge-definitions.py'),
-    host_os,
-    host_arch,
-    '@INPUT@',
-    '@OUTPUT@',
-    '-DCY_JAVA=' + enable_java.to_string('1', '0'),
-    '-DCY_PYTHON=' + enable_python.to_string('1', '0'),
-    '-DCY_OBJECTIVEC=' + enable_objc.to_string('1', '0'),
-  ] + dep_includes,
-)
-
-cycript_database = custom_target('cycript-database',
-  input: cycript_bridge_definitions,
-  output: 'libcycript.db',
-  command: [
-    find_program('generate-database.py'),
-    host_os_id,
-    '@OUTPUT@',
-    '@INPUT@',
-    join_paths(meson.source_root(), 'ext', 'node'),
-  ],
-  install: true,
-  install_dir: get_option('datadir'),
-)
 
 library('cycript', cycript_sources,
   cpp_args: ['-DYYDEBUG=1'],

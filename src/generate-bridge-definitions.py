@@ -51,7 +51,6 @@ analyze_args = [
     analysis_cpp,
     "-O2",
 ] + host_flags + extra_flags
-print("analyze_args:", " ".join(analyze_args))
 definitions = subprocess.check_output(analyze_args).decode('utf-8')
 
 with codecs.open(bridge_old, 'r', 'utf-8') as f:
