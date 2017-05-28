@@ -41,7 +41,6 @@ endif
 
 flex = find_program('flex')
 bison = find_program(files('ext/toolchain/usr/bin/bison.py'))
-nodejs = files('ext/node')
 
 cdata = configuration_data()
 
