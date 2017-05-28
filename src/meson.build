@@ -10,6 +10,8 @@ cycript_sources = [
   'Syntax.cpp',
   'sig/parse.cpp',
   'sig/copy.cpp',
+  'ObjectiveC/Output.cpp',
+  'ObjectiveC/Replace.cpp',
 ]
 
 cycript_features = ['C', 'Java', 'Ruby', 'Python', 'ObjectiveC']
@@ -115,6 +117,8 @@ cycript_bridge_definitions = custom_target('cycript-bridge-definitions',
   output: 'Bridge.def',
   command: [
     find_program('generate-bridge-definitions.py'),
+    host_os,
+    host_arch,
     '@INPUT@',
     '@OUTPUT@',
   ],
@@ -128,8 +132,9 @@ cycript_database = custom_target('cycript-database',
     '@INPUT@',
     '@OUTPUT@',
   ],
+  install: true,
+  install_dir: get_option('datadir'),
 )
-install_data(cycript_database, install_dir: get_option('datadir'))
 
 library('cycript', cycript_sources,
   cpp_args: ['-DYYDEBUG=1'],
