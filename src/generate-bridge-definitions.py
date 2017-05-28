@@ -28,6 +28,7 @@ if host_os == 'macos':
         "-isysroot", sdk_path,
         "-mmacosx-version-min=" + minver,
         "-arch", host_clang_arch,
+        "-std=gnu++11",
         "-stdlib=libc++",
     ]
 elif host_os == 'ios':
@@ -41,12 +42,14 @@ elif host_os == 'ios':
         "-isysroot", sdk_path,
         "-miphoneos-version-min=" + minver,
         "-arch", host_clang_arch,
-        "-stdlib=libc++"
+        "-std=gnu++11",
+        "-stdlib=libc++",
     ]
 
 analyze_args = [
     analyze,
     analysis_cpp,
+    "-O2",
 ] + host_flags + extra_flags
 print("analyze_args:", " ".join(analyze_args))
 definitions = subprocess.check_output(analyze_args).decode('utf-8')
