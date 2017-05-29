@@ -60,7 +60,8 @@ if not cc.has_header('sqlite3.h')
 endif
 dep_libs += ['-lsqlite3']
 
-readline_dep = subproject('readline').get_variable('readline_dep')
+readline = subproject('readline')
+readline_dep = readline.get_variable('readline_static_dep')
 
 if cc.has_function('cur_term', args: ['-ltermcap'])
   termcap_libs = ['-ltermcap']
