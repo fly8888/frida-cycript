@@ -60,6 +60,16 @@ if not cc.has_header('sqlite3.h')
 endif
 dep_libs += ['-lsqlite3']
 
+readline_dep = subproject('readline').get_variable('readline_dep')
+
+if cc.has_function('cur_term', args: ['-ltermcap'])
+  termcap_libs = ['-ltermcap']
+elif cc.has_function('cur_term', args: ['-lncurses'])
+  termcap_libs = ['-lncurses']
+else
+  error('termcap or ncurses is required')
+endif
+
 enable_java = true
 cdata.set10('CY_JAVA', enable_java)
 

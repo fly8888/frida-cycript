@@ -167,8 +167,16 @@ if get_option('enable_engine')
   )
 endif
 
-library('cycript', cycript_sources,
+libcycript = library('cycript', cycript_sources,
   cpp_args: ['-DYYDEBUG=1'],
   link_args: cycript_link_args + dep_libs,
   install: true,
 )
+
+if get_option('enable_console')
+  executable('cycript', 'Console.cpp',
+    link_args: termcap_libs,
+    link_with: libcycript,
+    dependencies: [readline_dep],
+  )
+endif
