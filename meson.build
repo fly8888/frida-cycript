@@ -139,14 +139,4 @@ foreach flag : candidate_flags
 endforeach
 add_project_arguments(extra_args, language: languages)
 
-if host_os == 'macos'
-  add_project_arguments(
-    '-mmacosx-version-min=10.9',
-    language: languages)
-  add_project_link_arguments(
-    '-Wl,-macosx_version_min,10.9',
-    '-Wl,-dead_strip',
-    language: languages)
-endif
-
 subdir('src')
