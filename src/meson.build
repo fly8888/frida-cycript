@@ -167,16 +167,24 @@ if get_option('enable_engine')
   )
 endif
 
-libcycript = library('cycript', cycript_sources,
+extra_link_args = []
+if host_os_family == 'darwin'
+  extra_link_args += ['-Wl,-exported_symbols_list,' + join_paths(meson.current_source_dir(), 'libcycript-core.symbols')]
+  if get_option('enable_engine')
+    extra_link_args += ['-Wl,-exported_symbols_list,' + join_paths(meson.current_source_dir(), 'libcycript-engine.symbols')]
+  endif
+endif
+
+cycript = library('cycript', cycript_sources,
   cpp_args: ['-DYYDEBUG=1'],
-  link_args: cycript_link_args + dep_libs,
+  link_args: cycript_link_args + dep_libs + extra_link_args,
   install: true,
 )
 
 if get_option('enable_console')
   executable('cycript', 'Console.cpp',
     link_args: termcap_libs,
-    link_with: libcycript,
+    link_with: cycript,
     dependencies: [readline_dep],
   )
 endif

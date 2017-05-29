@@ -114,6 +114,8 @@ configure_file(input: 'config.h.in',
 add_project_arguments('-include', 'config.h', language: languages)
 
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
+  add_project_arguments('-fvisibility=hidden', language: languages)
+
   candidate_flags = [
     '-Werror',
     '-Wno-non-virtual-dtor',
